@@ -8,20 +8,26 @@ A simple Japanese numerals converter.
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'suuji'
+gem 'suuji', github: 'jo-apichai/suuji'
 ```
 
 And then execute:
 
     $ bundle
 
-Or install it yourself as:
-
-    $ gem install suuji
-
 ## Usage
 
-TODO: Write usage instructions here
+#### Converting to a kanji number
+
+```ruby
+Suuji.to_kanji(12345)
+```
+
+#### Converting to a arabic number
+
+```ruby
+Suuji.to_arabic("一万二千三百四十五")
+```
 
 ## Development
 
