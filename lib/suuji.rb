@@ -1,18 +1,26 @@
 require "suuji/version"
 
 module Suuji
-  SUFFIXS = ['', '十', '百', '千'].freeze
+  ARABIC_NUMBERS = %w(1 2 3 4 5 6 7 8 9).freeze
+  KANJI_NUMBERS = %w(一 二 三 四 五 六 七 八 九).freeze
+  DAIJI_NUMBERS = %w(壱 弐 参 四 五 六 七 八 九).freeze
+  KANJI_SUFFIXS = ['', '十', '百', '千'].freeze
+  DAIJI_SUFFIXS = ['', '拾', '百', '千'].freeze
   MYRIADS = ['', '万', '億', '兆', '京'].freeze
 
-  def self.to_kanji(value)
+  def self.to_kanji(value, use_daiji = false)
     parts = value.to_s.reverse.scan(/.{1,4}/)
 
     result = ''
     parts.each_with_index do |part, index|
-      result = "#{to_kanji_partial(part)}#{MYRIADS[index]}#{result}"
+      result = "#{to_kanji_partial(part, use_daiji)}#{MYRIADS[index]}#{result}"
     end
 
     result
+  end
+
+  def self.to_daiji(value)
+    to_kanji(value, true)
   end
 
   def self.to_arabic(value)
@@ -31,29 +39,31 @@ module Suuji
 
   private
 
-    def self.to_kanji_partial(value)
-      digit_hash = Hash[arabic_numbers.zip(kanji_numbers)]
+    def self.to_kanji_partial(value, use_daiji)
+      japanese_numbers = (use_daiji ? DAIJI_NUMBERS : KANJI_NUMBERS)
+      digit_hash = Hash[ARABIC_NUMBERS.zip(japanese_numbers)]
+      suffixs = (use_daiji ? DAIJI_SUFFIXS : KANJI_SUFFIXS)
 
       result = ''
       0.upto(value.length - 1).each do |i|
         next unless value[i].to_i > 0
 
         number = (i > 0 && value[i] == '1') ? '' : digit_hash[value[i]]
-        result = "#{number}#{SUFFIXS[i]}#{result}"
+        result = "#{number}#{suffixs[i]}#{result}"
       end
 
       result
     end
 
     def self.to_arabic_partial(value)
-      digit_hash = Hash[kanji_numbers.zip(arabic_numbers)]
+      digit_hash = Hash[KANJI_NUMBERS.zip(ARABIC_NUMBERS)]
 
       regex = ''
-      SUFFIXS.each { |suffix| regex = "(?:(.?)#{suffix})?#{regex}" }
+      KANJI_SUFFIXS.each { |suffix| regex = "(?:(.?)#{suffix})?#{regex}" }
       digits = Regexp.new(regex).match(value)
 
       result = ''
-      length = SUFFIXS.length
+      length = KANJI_SUFFIXS.length
       (1..length).each do |i|
         case digits[i]
         when nil
@@ -66,13 +76,5 @@ module Suuji
       end
 
       result
-    end
-
-    def self.arabic_numbers
-      %w(1 2 3 4 5 6 7 8 9)
-    end
-
-    def self.kanji_numbers
-      %w(一 二 三 四 五 六 七 八 九)
     end
 end

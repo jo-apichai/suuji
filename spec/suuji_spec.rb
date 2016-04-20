@@ -28,6 +28,29 @@ describe Suuji do
     end
   end
 
+  describe '#to_daiji' do
+    it 'converts decimal to Japanese daiji numerals' do
+      expect(Suuji.to_daiji(1)).to eq '壱'
+      expect(Suuji.to_daiji(10)).to eq '拾'
+      expect(Suuji.to_daiji(20)).to eq '弐拾'
+      expect(Suuji.to_daiji(100)).to eq '百'
+      expect(Suuji.to_daiji(400)).to eq '四百'
+      expect(Suuji.to_daiji(404)).to eq '四百四'
+      expect(Suuji.to_daiji(1111)).to eq '千百拾壱'
+      expect(Suuji.to_daiji(7777)).to eq '七千七百七拾七'
+      expect(Suuji.to_daiji(8080)).to eq '八千八拾'
+
+      expect(Suuji.to_daiji(1_0000)).to eq '壱万'
+      expect(Suuji.to_daiji(100_0000)).to eq '百万'
+      expect(Suuji.to_daiji(1000_0000)).to eq '千万'
+      expect(Suuji.to_daiji(12_3456)).to eq '拾弐万参千四百五拾六'
+      expect(Suuji.to_daiji(1234_5678)).to eq '千弐百参拾四万五千六百七拾八'
+
+      expect(Suuji.to_daiji(1_0001_0001_0001_0000)).to eq '壱京壱兆壱億壱万'
+      expect(Suuji.to_daiji(2345_2345_2345_2345_2345)).to eq '弐千参百四拾五京弐千参百四拾五兆弐千参百四拾五億弐千参百四拾五万弐千参百四拾五'
+    end
+  end
+
   describe '#to_arabic' do
     it 'converts Japanese numerals to decimal' do
       expect(Suuji.to_arabic('一')).to eq 1

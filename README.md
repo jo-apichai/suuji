@@ -23,7 +23,13 @@ And then execute:
 Suuji.to_kanji(12345)
 ```
 
-#### Converting to a arabic number
+#### Converting to a daiji number
+
+```ruby
+Suuji.to_daiji(12345)
+```
+
+#### Converting to an arabic number
 
 ```ruby
 Suuji.to_arabic("一万二千三百四十五")
