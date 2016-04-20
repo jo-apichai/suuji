@@ -71,6 +71,7 @@ describe Suuji do
 
       expect(Suuji.to_arabic('一京一兆一億一万')).to eq 1_0001_0001_0001_0000
       expect(Suuji.to_arabic('二千三百四十五京二千三百四十五兆二千三百四十五億二千三百四十五万二千三百四十五')).to eq 2345_2345_2345_2345_2345
+      expect(Suuji.to_arabic('壱万弐千参百四拾五')).to eq 12345
     end
   end
 end

@@ -20,19 +20,20 @@ And then execute:
 #### Converting to a kanji number
 
 ```ruby
-Suuji.to_kanji(12345)
+Suuji.to_kanji(12345)   # => "一万二千三百四十五"
 ```
 
 #### Converting to a daiji number
 
 ```ruby
-Suuji.to_daiji(12345)
+Suuji.to_daiji(12345)   # => "壱万弐千参百四拾五"
 ```
 
 #### Converting to an arabic number
 
 ```ruby
-Suuji.to_arabic("一万二千三百四十五")
+Suuji.to_arabic("一万二千三百四十五")   # => 12345
+Suuji.to_arabic("壱万弐千参百四拾五")   # => 12345
 ```
 
 ## Development

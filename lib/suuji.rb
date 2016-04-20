@@ -56,14 +56,17 @@ module Suuji
     end
 
     def self.to_arabic_partial(value)
-      digit_hash = Hash[KANJI_NUMBERS.zip(ARABIC_NUMBERS)]
+      use_daiji = is_daiji? value
+      japanese_numbers = (use_daiji ? DAIJI_NUMBERS : KANJI_NUMBERS)
+      digit_hash = Hash[japanese_numbers.zip(ARABIC_NUMBERS)]
+      suffixs = (use_daiji ? DAIJI_SUFFIXS : KANJI_SUFFIXS)
 
       regex = ''
-      KANJI_SUFFIXS.each { |suffix| regex = "(?:(.?)#{suffix})?#{regex}" }
+      suffixs.each { |suffix| regex = "(?:(.?)#{suffix})?#{regex}" }
       digits = Regexp.new(regex).match(value)
 
       result = ''
-      length = KANJI_SUFFIXS.length
+      length = suffixs.length
       (1..length).each do |i|
         case digits[i]
         when nil
@@ -76,5 +79,9 @@ module Suuji
       end
 
       result
+    end
+
+    def self.is_daiji?(value)
+      value =~ /[壱弐参拾]/
     end
 end
