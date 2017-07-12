@@ -8,77 +8,68 @@ module Suuji
   DAIJI_SUFFIXS = ['', '拾', '百', '千'].freeze
   MYRIADS = ['', '万', '億', '兆', '京'].freeze
 
-  def self.to_kanji(value, use_daiji = false)
-    parts = value.to_s.reverse.scan(/.{1,4}/)
+  def self.to_kanji(number, use_daiji = false)
+    parts = number.to_s.reverse.scan(/.{1,4}/)
 
-    result = ''
-    parts.each_with_index do |part, index|
-      result = "#{to_kanji_partial(part, use_daiji)}#{MYRIADS[index]}#{result}"
-    end
-
-    result
+    parts.each_with_index.inject([]) do |arr, (part, index)|
+      arr << "#{to_kanji_partial(part, use_daiji)}#{MYRIADS[index]}"
+    end.reverse.join('')
   end
 
-  def self.to_daiji(value)
-    to_kanji(value, true)
+  def self.to_daiji(number)
+    to_kanji(number, true)
   end
 
-  def self.to_arabic(value)
-    regex = ''
-    MYRIADS.each { |myriad| regex = "(?:(.*)#{myriad})?#{regex}" }
+  def self.to_arabic(number)
+    pattern = MYRIADS.inject([]) do |arr, myriad|
+      arr << "(?:(.*)#{myriad})?"
+    end.reverse.join('')
 
-    parts = Regexp.new(regex).match(value)
+    parts = Regexp.new(pattern).match(number)
 
-    result = ''
-    (1..MYRIADS.length).each do |i|
-      result += to_arabic_partial(parts[i]) unless parts[i].nil?
-    end
-
-    result.to_i
+    (1..MYRIADS.length).inject([]) do |arr, i|
+      arr << to_arabic_partial(parts[i]) unless parts[i].nil?
+      arr
+    end.join('').to_i
   end
 
   private
 
-    def self.to_kanji_partial(value, use_daiji)
-      japanese_numbers = (use_daiji ? DAIJI_NUMBERS : KANJI_NUMBERS)
-      digit_hash = Hash[ARABIC_NUMBERS.zip(japanese_numbers)]
+    def self.to_kanji_partial(number, use_daiji)
       suffixs = (use_daiji ? DAIJI_SUFFIXS : KANJI_SUFFIXS)
+      japanese_numbers = use_daiji ? DAIJI_NUMBERS : KANJI_NUMBERS
+      digit_hash = ARABIC_NUMBERS.zip(japanese_numbers).to_h
 
-      result = ''
-      0.upto(value.length - 1).each do |i|
-        next unless value[i].to_i > 0
+      number.split('').each_with_index.inject([]) do |arr, (digit, index)|
+        if digit.to_i.positive?
+          num = (index > 0 && digit == '1') ? nil : digit_hash[digit]
+          arr << "#{num}#{suffixs[index]}"
+        end
 
-        number = (i > 0 && value[i] == '1') ? '' : digit_hash[value[i]]
-        result = "#{number}#{suffixs[i]}#{result}"
-      end
-
-      result
+        arr
+      end.reverse.join('')
     end
 
-    def self.to_arabic_partial(value)
-      use_daiji = is_daiji? value
-      japanese_numbers = (use_daiji ? DAIJI_NUMBERS : KANJI_NUMBERS)
-      digit_hash = Hash[japanese_numbers.zip(ARABIC_NUMBERS)]
+    def self.to_arabic_partial(number)
+      use_daiji = is_daiji? number
       suffixs = (use_daiji ? DAIJI_SUFFIXS : KANJI_SUFFIXS)
+      japanese_numbers = (use_daiji ? DAIJI_NUMBERS : KANJI_NUMBERS)
+      digit_hash = japanese_numbers.zip(ARABIC_NUMBERS).to_h
 
-      regex = ''
-      suffixs.each { |suffix| regex = "(?:(.?)#{suffix})?#{regex}" }
-      digits = Regexp.new(regex).match(value)
+      pattern = suffixs.inject([]) do |arr, suffix|
+        arr << "(?:(.?)#{suffix})?"
+      end.reverse.join('')
 
-      result = ''
+      digits = Regexp.new(pattern).match(number)
+
       length = suffixs.length
-      (1..length).each do |i|
+      (1..length).inject([]) do |arr, i|
         case digits[i]
-        when nil
-          result += '0'
-        when ''
-          result += (i == length) ? '0' : '1'
-        else
-          result += digit_hash[digits[i]]
+        when nil  then arr << '0'
+        when ''   then arr << (i == length ? '0' : '1')
+        else arr << digit_hash[digits[i]]
         end
-      end
-
-      result
+      end.join('')
     end
 
     def self.is_daiji?(value)
